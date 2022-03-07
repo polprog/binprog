@@ -26,15 +26,16 @@ import urltitle
 # Infos taken up to I006
 
 
-version    = '1.0.6 python3.5'
+version    = '1.0.7 python3.5'
 
 TheChosen  =  eval(open ( 'TheChosen.txt' ).read ())  # People that can do special things
 IgnoreUser =  eval(open ( 'IgnoreUser.txt' ).read ()) # People to be ignore by the bot
-botnick    =  'xxxxxxxxx'  # Bot nickame
-channel    =  '#xxxxxxxx'  # Channel name the bot operates on
-password   =  '---------'  # NickServ pw
+botnick    =  'lolprog'
+#channel    =  '#!/bin/bash'
+channel    =  '#polprog'
+password   =  ''
 port       =  6667
-server     =  'xxxxxxxxxx' # IRC server
+server     =  'irc.esper.net'
 #cmdprefix  =  '+++'
 cmdprefix  = '!'
 starttime  = datetime.now()
@@ -61,11 +62,6 @@ print("Done.")
 
 
 # Set nick
-
-print("Taking nick", botnick)
-irc.send ( ('NICK ' + botnick + '\r\n').encode('utf8') )
-irc.send(('USER ' + botnick + ' ' + botnick + ' ' + botnick + ' :BeepBeep\r\n').encode('utf-8'))
-
 
 running = True
 
@@ -172,6 +168,12 @@ state = "connecting"
 
 lasturl = ''
 
+
+print("Taking nick", botnick)
+irc.send ( ('NICK ' + botnick + '\r\n').encode('utf8') )
+irc.send(('USER ' + botnick + ' ' + botnick + ' ' + botnick + ' :BeepBeep\r\n').encode('utf-8'))
+
+
 while running:
         
 #        print("Waiting for data...")
@@ -203,8 +205,12 @@ while running:
                 irc.send(('PRIVMSG NickServ :IDENTIFY '
                            + ' ' + password + '\r\n').encode('utf-8'))
                 Version(data) #send a version string as hello
+                
         if data.find ( b'PING' ) != -1: # ping/pong server
-                irc.send(('PONG ' + data.split()[1].decode('utf-8') + '\r\n').encode('utf-8'))
+                pingloc = data.find( b'PING' )
+                pingpayload = data[pingloc:].split()[1].decode('utf-8')
+                irc.send(('PONG ' + pingpayload + '\r\n').encode('utf-8'))
+                
 
         try:
                 posted_urls = re.findall("PRIVMSG.*(https?://[^ ]*)", data.decode('utf-8'))
