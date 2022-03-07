@@ -21,12 +21,11 @@ from random import choice
 from datetime import datetime
 import urltitle
 
-
 # Errors taken up to E004
 # Infos taken up to I006
 
 
-version    = '1.0.7 python3.5'
+version    = '1.0.8 python3.5'
 
 TheChosen  =  eval(open ( 'TheChosen.txt' ).read ())  # People that can do special things
 IgnoreUser =  eval(open ( 'IgnoreUser.txt' ).read ()) # People to be ignore by the bot
@@ -66,6 +65,9 @@ print("Done.")
 running = True
 
 
+def ircsend(data):
+        irc.send(data.encode('utf-8'))
+        print(">", data, end='')
 
 # Many Functions, fun for all the family:
 
@@ -73,12 +75,12 @@ def Volunteer (): # For potential volunteers
 
 	global User
 
-	irc.send (
+	ircsend (
                 'PRIVMSG ' + User +
                 ' : Why not become one of the awesome Green Shirts for xxxxxx! http://xxxxxx.com/volunteer \r\n'
         )
 
-	irc.send (
+	ircsend (
                 'PRIVMSG ' + User +
                 ' : If you have questions, highlight rooose or reallyrose (Just say the name into chat) or if she isn\'t here, email volunteer@xxxxxx.com \r\n'
         )
@@ -87,23 +89,25 @@ def Quit (): # only quit when I say so
 
         global TheChosen
 
-        QUser = data [ 1:data.find ( b'!' ) ].decode('utf-8') #Slice
+        QUser = data [1:data.find('!')] #Slice
         print(QUser,  "requested quit...")
         if QUser in TheChosen:
-                irc.send (
-                        ('PRIVMSG ' + channel +
-                        ' :I002 disconnecting from remote. Bye bye! \r\n'
-                ).encode('utf-8'))
+                ircsend ('PRIVMSG ' + channel +
+                        ' :I002 disconnecting from remote. Bye bye! \r\n')
 
-                irc.send(('QUIT\r\n').encode('utf-8'))
+                ircsend('QUIT\r\n')
 
                 global running
 
                 running = False # quit program
 
         else:
-                irc.send ( ('PRIVMSG ' + channel + ' :E001 permission denied\r\n').encode('utf-8') ) # if not...
+                ircsend ('PRIVMSG ' + channel + ' :E001 permission denied\r\n') # if not...
 
+def Source():
+         ircsend ('PRIVMSG ' + channel + ' :I004 https://github.com/polprog/binprog\r\n')
+
+                
 def GreetNew (): # Greet new users
 
 	global IgnoreUser
@@ -117,7 +121,7 @@ def GreetNew (): # Greet new users
 
 		else:
 
-			irc.send (
+			ircsend (
                                 'PRIVMSG ' + channel +
                                 ' :Welcome to ' + channel + ', ' + User + '\r\n'
                         )
@@ -128,30 +132,27 @@ def Cat (data): # function to pull a random cat picture from a dictionary of cat
 	random.seed(datetime.now())
 	PickCat = random.choice ( cats )
         # post it
-	irc.send ((
+	ircsend(
                 'PRIVMSG ' + channel +
-                ' :I006 kitteh! ' + PickCat + '\r\n').encode('utf-8')
+                ' :I006 kitteh! ' + PickCat + '\r\n'
         )
 	
 def Version(data):
-	irc.send ((
+	ircsend (
                 'PRIVMSG ' + channel +
-                ' :I004 binprog version '+version+', cmdprefix is '+cmdprefix+'\r\n').encode('utf-8')
-        )
+                ' :I004 binprog version '+version+', cmdprefix is '+cmdprefix+'\r\n')
 
 def Help (data): # Halp!
-        user = data [ 1:data.find ( b'!' ) ].decode('utf-8') #Slice
-        irc.send (
-                ('PRIVMSG ' + user +
-                        ' :I005 Command prefix is '+cmdprefix+'; Available commands: ath - hangup (oper only), help - this, t <url]> - print url title, uptime - print uptime, version - bot version, ping - ping back, cat - send a kitteh \r\n').encode('utf-8')
-                )
+        user = data [1:data.find('!')] #Slice
+        ircsend ('PRIVMSG ' + user +
+                        ' :I005 Command prefix is '+cmdprefix+'; Available commands: ath - hangup (oper only), help - this, t <url]> - print url title, uptime - print uptime, version - bot version, ping - ping back, cat - send a kitteh \r\n')
 
 
 
 
 def sigint_handler(signal, frame):
     print('Interrupted. Gracefully closing IRC socket...')
-    irc.send("QUIT binprog closing (caught ^C)\r\n".encode('utf-8'))
+    ircsend("QUIT binprog closing (caught ^C)\r\n")
     while True:
             data = irc.recv(4096)
             if(data == b''):
@@ -170,13 +171,14 @@ lasturl = ''
 
 
 print("Taking nick", botnick)
-irc.send ( ('NICK ' + botnick + '\r\n').encode('utf8') )
-irc.send(('USER ' + botnick + ' ' + botnick + ' ' + botnick + ' :BeepBeep\r\n').encode('utf-8'))
+ircsend('NICK ' + botnick + '\r\n')
+ircsend('USER ' + botnick + ' ' + botnick + ' ' + botnick + ' :BeepBeep\r\n')
 
+#TODO: rewrite to process packets line by line.
 
 while running:
         
-#        print("Waiting for data...")
+        #print("Waiting for data...")
 
         data = b''
         while True:
@@ -185,86 +187,87 @@ while running:
                 except socket.timeout:
                         pass
                         break
+        data = data.decode('utf-8')
+        #print("Received", len(data), "bytes in this round...")
                 
- #       print("Received", len(data), "bytes in this round...")
-                
-        User = data [ 1:data.find ( b'!' ) ].decode('utf-8') # Slice
-        print (data.decode('utf-8'), end="")
+        User = data [ 1:data.find ('!') ] #Slice user out 
+        print (data, end="")
 
         #GreetNew ()
         
         # Don't join chan til server has finished spamming
-        if data.find (b'End of /MOTD ') != -1 and state == "connecting":
+        if data.find ('End of /MOTD ') != -1 and state == "connecting":
                 state = "connected"
-                irc.send(('JOIN ' + channel + '\r\n').encode('utf-8'))
+                ircsend('JOIN ' + channel + '\r\n')
 
-        if data.find ( b'End of /NAMES list.' ) != -1: # don't reg til joined chan
+        if data.find ('End of /NAMES list.' ) != -1: # don't reg til joined chan
                 print("Attepmting to identify to NickServ...")
-                print(('PRIVMSG NickServ :IDENTIFY ' + 
-                           ' ' + password + '\r\n').encode('utf-8'))
-                irc.send(('PRIVMSG NickServ :IDENTIFY '
-                           + ' ' + password + '\r\n').encode('utf-8'))
+                ircsend('PRIVMSG NickServ :IDENTIFY '
+                           + ' ' + password + '\r\n')
                 Version(data) #send a version string as hello
                 
-        if data.find ( b'PING' ) != -1: # ping/pong server
-                pingloc = data.find( b'PING' )
-                pingpayload = data[pingloc:].split()[1].decode('utf-8')
-                irc.send(('PONG ' + pingpayload + '\r\n').encode('utf-8'))
+        if data.find ( 'PING :' ) != -1: # ping/pong server
+                pingloc = data.find( 'PING :' )
+                pingpayload = data[pingloc-2:].split()[1]
+                ircsend('PONG ' + pingpayload + '\r\n')
                 
 
         try:
-                posted_urls = re.findall("PRIVMSG.*(https?://[^ ]*)", data.decode('utf-8'))
+                posted_urls = re.findall("PRIVMSG.*(https?://[^ ]*)", data)
                 if posted_urls != []:
                         #print("user", User, "posted url", posted_urls)
                         lasturl = posted_urls[0]
                         try:
                                 title = urltitle.UrlTitle(data)
                                 #print("URL TITLE:", title)
-                                irc.send(('PRIVMSG ' + channel + " :Title: " + title + "\r\n").encode('utf-8'))
+                                ircsend('PRIVMSG ' + channel + " :Title: " + title + "\r\n")
                                 continue
                         except URLError:
                                 pass
                         
                 
-                if data.find ( (cmdprefix + "ath").encode('utf-8') ) != -1:
+                if data.find ( (cmdprefix + "ath") ) != -1:
                         Quit ()
 
-                elif data.find ( (channel + ' :' + cmdprefix + 'help').encode('utf-8') ) != -1:
+                elif data.find ( (channel + ' :' + cmdprefix + 'help') ) != -1:
                         Help (data)
                 
-                elif data.find (( channel + ' :' + cmdprefix + 't').encode('utf-8')) != -1:
-                        #print("Processing title...", end='')
+                elif data.find (( channel + ' :' + cmdprefix + 't')) != -1:
                         try:
                                 title = urltitle.UrlTitle(data)
                         
                         except URLError as e:
-                                irc.send(('PRIVMSG ' + channel +
-                                          " :E003 urllib error: "+str(e.reason)+"\r\n").encode('utf-8'))
+                                ircsend('PRIVMSG ' + channel +
+                                          " :E003 urllib error: "+str(e.reason)+"\r\n")
                                 continue
                         
                         if(title == -1):
-                                irc.send(('PRIVMSG ' + channel +
-                                          " :E002 not a supported uniform resource locator\r\n").encode('utf-8'))
+                                ircsend('PRIVMSG ' + channel +
+                                          " :E002 not a supported uniform resource locator\r\n")
                                 continue
                         if(title == -2):
-                                irc.send(('PRIVMSG ' + channel +
-                                          " :E004 sorry, cannot find a title tag!\r\n").encode('utf-8'))
+                                ircsend('PRIVMSG ' + channel +
+                                          " :E004 sorry, cannot find a title tag!\r\n")
                         
                         if len(title) > 80:
                                 title = title[:80] + " [trunc'd]"
                                 print(title)
-                        irc.send(('PRIVMSG ' + channel + " :Title: " + title + "\r\n").encode('utf-8'))
+                        ircsend('PRIVMSG ' + channel + " :Title: " + title + "\r\n")
                         
-                elif data.find ( (channel + ' :' + cmdprefix + 'uptime').encode('utf-8') ) != -1:
+                elif data.find ( (channel + ' :' + cmdprefix + 'uptime') ) != -1:
                                 uptime = datetime.now() - starttime
-                                irc.send(('PRIVMSG ' + channel + " :I001 uptime is " + str(uptime) + "\r\n").encode('utf-8'))
-                elif data.find ( (channel + ' :' + cmdprefix + 'version').encode('utf-8') ) != -1:
+                                ircsend('PRIVMSG ' + channel + " :I001 uptime is " + str(uptime) + "\r\n")
+                elif data.find ( (channel + ' :' + cmdprefix + 'version') ) != -1:
                                 Version(data)
                                 
-                elif data.find ( (channel + ' :' + cmdprefix + 'ping').encode('utf-8') ) != -1:
-                        irc.send(('PRIVMSG ' + channel + " :I003 go ping yourself "+User+"\r\n").encode('utf-8'))
-                elif data.find ( (channel + ' :' + cmdprefix + 'cat').encode('utf-8') ) != -1:
+                elif data.find ( (channel + ' :' + cmdprefix + 'ping') ) != -1:
+                        ircsend('PRIVMSG ' + channel + " :I003 go ping yourself "+User+"\r\n")
+                        
+                elif data.find ( (channel + ' :' + cmdprefix + 'cat') ) != -1:
                         Cat(data)
+
+                elif data.find ( (channel + ' :' + cmdprefix + 'src') ) != -1:
+                        Source()
 
                 #elif data.find ( (channel + ' :' + cmdprefix + 'xxx').encode('utf-8') ) != -1:
                 #        raise ValueError()
@@ -273,4 +276,4 @@ while running:
                 print("Non critical exception:")
                 traceback.print_exc()
                 print("End of stack trace")
-                irc.send(('PRIVMSG ' + channel + " :E999 command failed with uncaught exception\r\n").encode('utf-8'))
+                ircsend('PRIVMSG ' + channel + " :E999 command failed with uncaught exception\r\n")
