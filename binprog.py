@@ -10,7 +10,7 @@
 # Most functions operating on data want bytes object, some of them are not yet converted
 # I just needed a base for a link title bot so I took this. Fixed up the network code a bit
 # This may be easily extended as needed.
-
+# until 07.03.2022: further modifications, refactor code
 
 import time, socket, sys, string, re, random, string
 import signal, traceback
@@ -25,7 +25,7 @@ import urltitle
 # Infos taken up to I006
 
 
-version    = '1.0.8 python3.5'
+version    = '1.0.9 python3.5'
 
 TheChosen  =  eval(open ( 'TheChosen.txt' ).read ())  # People that can do special things
 IgnoreUser =  eval(open ( 'IgnoreUser.txt' ).read ()) # People to be ignore by the bot
@@ -201,14 +201,15 @@ while running:
                 ircsend('JOIN ' + channel + '\r\n')
 
         if data.find ('End of /NAMES list.' ) != -1: # don't reg til joined chan
-                print("Attepmting to identify to NickServ...")
-                ircsend('PRIVMSG NickServ :IDENTIFY '
-                           + ' ' + password + '\r\n')
+                if password != '':
+                        print("Attepmting to identify to NickServ...")
+                        ircsend('PRIVMSG NickServ :IDENTIFY '
+                                + ' ' + password + '\r\n')
                 Version(data) #send a version string as hello
                 
         if data.find ( 'PING :' ) != -1: # ping/pong server
                 pingloc = data.find( 'PING :' )
-                pingpayload = data[pingloc-2:].split()[1]
+                pingpayload = data[pingloc:].split()[1]
                 ircsend('PONG ' + pingpayload + '\r\n')
                 
 
