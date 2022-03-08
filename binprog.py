@@ -23,12 +23,13 @@ from datetime import datetime
 
 import urltitle
 import networking
+import abspqmcdu
 
 # Errors taken up to E004
 # Infos taken up to I006
 
 
-version    = '1.0.10 python3.5'
+version    = '1.0.12 python3.5'
 
 TheChosen  =  eval(open ( 'TheChosen.txt' ).read ())  # People that can do special things
 IgnoreUser =  eval(open ( 'IgnoreUser.txt' ).read ()) # People to be ignore by the bot
@@ -246,6 +247,12 @@ while running:
                         addrname = data[cmdloc:].split()[2]
                         print("addrname=", addrname)
                         ircsend('PRIVMSG ' + channel + " :" + networking.rdns_lookup(addrname) + "\r\n")
+
+                elif data.find ( (channel + ' :' + cmdprefix + 'abspqmcdu') ) != -1:
+                        cmdloc = data.find ( (channel + ' :' + cmdprefix + 'abspqmcdu') )
+                        addrname = data[cmdloc:].split()[2]
+                        print("addrname=", addrname)
+                        ircsend('PRIVMSG ' + channel + " :" + abspqmcdu.abspqmcdu(addrname) + "\r\n")
 
                         
                 elif data.find (( channel + ' :' + cmdprefix + 't')) != -1:
