@@ -4,6 +4,7 @@ import re
 
 YTapiURL='http://gdata.youtube.com/feeds/api/videos/%s?alt=json&v=2'
 
+
 def UrlTitle(data):
         url = re.search("http[s]?://[^ ]*", data)
         if not url:
