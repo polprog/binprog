@@ -29,12 +29,12 @@ import abspqmcdu
 # Infos taken up to I006
 
 
-version    = '1.0.13 python3.5'
+version    = '1.0.14 python3.5'
 
 TheChosen  =  eval(open ( 'TheChosen.txt' ).read ())  # People that can do special things
 IgnoreUser =  eval(open ( 'IgnoreUser.txt' ).read ()) # People to be ignore by the bot
 botnick    =  'binprog'
-#channel    =  '#!/bin/bash'
+channel    =  '####'
 channel    =  '#avrs'
 password   =  open('password.txt').read().strip()
 port       =  6667
@@ -223,7 +223,7 @@ while running:
                                 #print("URL TITLE:", title)
                                 ircsend('PRIVMSG ' + channel + " :Title: " + title + "\r\n")
                                 continue
-                        except URLError:
+                        except:
                                 pass
                         
                 

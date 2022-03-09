@@ -15,7 +15,7 @@ def UrlTitle(data):
                 return -2
         title = re.sub("[\n\r\t]", "", title[0])
         print("Title is " + title)
-        return title
+        return str(title)
 
 
 
