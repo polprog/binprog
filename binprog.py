@@ -29,16 +29,16 @@ import abspqmcdu
 # Infos taken up to I006
 
 
-version    = '1.0.12 python3.5'
+version    = '1.0.13 python3.5'
 
 TheChosen  =  eval(open ( 'TheChosen.txt' ).read ())  # People that can do special things
 IgnoreUser =  eval(open ( 'IgnoreUser.txt' ).read ()) # People to be ignore by the bot
-botnick    =  'lolprog'
+botnick    =  'binprog'
 #channel    =  '#!/bin/bash'
-channel    =  '#polprog'
-password   =  ''
+channel    =  '#avrs'
+password   =  open('password.txt').read().strip()
 port       =  6667
-server     =  'irc.esper.net'
+server     =  'irc.libera.chat'
 #cmdprefix  =  '+++'
 cmdprefix  = '!'
 starttime  = datetime.now()
@@ -50,10 +50,12 @@ print("binprog version", version, "starting on", str(starttime))
 print("Bot operators:" + str(TheChosen))
 print("Ignores:" + str(IgnoreUser))
 print("Bot nickname:", botnick, "command prefix is", cmdprefix)
+if password == '':
+        print("Password is empty, I will not authenticate against NickServ")
 
 
 # Connecting to a server:
-print("Opening socket to IRC server", str(server)+":"+str(port), end='')
+print("Opening socket to IRC server", str(server)+":"+str(port)+"... ", end='')
 irc = socket.socket ( socket.AF_INET, socket.SOCK_STREAM )
 
 irc.connect ( ( server, port ) )
@@ -75,9 +77,6 @@ def ircsend(data):
 # Many Functions, fun for all the family:
 
 def Volunteer (): # For potential volunteers
-
-	global User
-
 	ircsend (
                 'PRIVMSG ' + User +
                 ' : Why not become one of the awesome Green Shirts for xxxxxx! http://xxxxxx.com/volunteer \r\n'
@@ -89,8 +88,6 @@ def Volunteer (): # For potential volunteers
         )
 
 def Quit (): # only quit when I say so
-
-        global TheChosen
 
         QUser = data [1:data.find('!')] #Slice
         print(QUser,  "requested quit...")
