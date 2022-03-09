@@ -8,7 +8,7 @@ YTapiURL='http://gdata.youtube.com/feeds/api/videos/%s?alt=json&v=2'
 def UrlTitle(data):
         url = re.search("http[s]?://[^ ]*", data)
         if not url:
-            return -1
+            return "I007 Usage: !t <http[s] url>"
         rq = urlopen(url.group(0), timeout=4)
         title = re.findall("<title>(.*)</title>", rq.read().decode('utf-8'))
         if title == []:

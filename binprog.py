@@ -24,25 +24,45 @@ from datetime import datetime
 import urltitle
 import networking
 import abspqmcdu
+import radiation
 
-# Errors taken up to E004
+# Errors taken up to E006
+# E001 permission denied
+# E003 urllib error: "+str(e.reason)+"\r\n")
+# E002 not a supported uniform resource locator\r\n")
+# E004 sorry, cannot find a title tag!\r\n")
+# E005 [ general not found in any api response data, like abspqmcdu or radiation data ]
+# E006 [ user parameter error ]
+
+
+
 # Infos taken up to I006
+# INFOS are messages not directly related to api responses
+# I001 uptime is
+# I002 disconnecting from remote. Bye bye!
+# I003 go ping yourself
+# I004 binprog version info
+# I005 help text
+# I006 kitteh!
+# I007 command usage
+
+version    = '1.0.15 python3.5'
 
 
-version    = '1.0.14 python3.5'
+
+# TODO load all this from a file
 
 TheChosen  =  eval(open ( 'TheChosen.txt' ).read ())  # People that can do special things
 IgnoreUser =  eval(open ( 'IgnoreUser.txt' ).read ()) # People to be ignore by the bot
 botnick    =  'binprog'
-channel    =  '####'
-channel    =  '#avrs'
+channel    =  '#polprog'
+#channel    =  '#avrs'
 password   =  open('password.txt').read().strip()
 port       =  6667
-server     =  'irc.libera.chat'
+server     =  'irc.esper.net'
 #cmdprefix  =  '+++'
 cmdprefix  = '!'
 starttime  = datetime.now()
-
 
 
 
@@ -145,7 +165,7 @@ def Version(data):
 def Help (data): # Halp!
         user = data [1:data.find('!')] #Slice
         ircsend ('PRIVMSG ' + user +
-                        ' :I005 Command prefix is '+cmdprefix+'; Available commands: ath - hangup (oper only), help - this, t <url]> - print url title, uptime - print uptime, version - bot version, ping - ping back, cat - send a kitteh \r\n')
+                        ' :I005 Command prefix is '+cmdprefix+'; Available commands: ath - hangup (oper only), help - this, t <url]> - print url title, uptime - print uptime, version - bot version, ping - ping back, cat - send a kitteh, abspqmcdu - check polish PSTN number block owner, rad - check polish city radiation level \r\n')
 
 
 
@@ -250,6 +270,19 @@ while running:
                         addrname = data[cmdloc:].split()[2]
                         print("addrname=", addrname)
                         ircsend('PRIVMSG ' + channel + " :" + abspqmcdu.abspqmcdu(addrname) + "\r\n")
+
+                elif data.find ( (channel + ' :' + cmdprefix + 'rad') ) != -1:
+                        cmdloc = data.find ( (channel + ' :' + cmdprefix + 'rad'))
+                        paramstart = cmdloc + len(channel + ' :' + cmdprefix + 'rad')
+                        eol = data.find('\r\n', cmdloc)
+                        print("paramstart = ", paramstart, "eol = ", eol)
+                        city = data[paramstart:eol].strip()
+                        print("City = ", city)
+                        if city == "":
+                                ircsend("PRIVMSG " + channel + " :I007 Usage: !rad [nazwa miasta]\r\n")
+                        else:
+                                ircsend("PRIVMSG " + channel + " :" + radiation.checkRadiation(city) + "\r\n")
+                        
 
                         
                 elif data.find (( channel + ' :' + cmdprefix + 't')) != -1:
