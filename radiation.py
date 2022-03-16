@@ -28,7 +28,7 @@ def checkRadiation(city):
     for key,record in jsondata.items():
         #print(key, "--->", record['nazwa'])
         if record['nazwa'].casefold() == city:
-            return "I003 " + record['nazwa'] + ": " + record['wartosc'] + " µSv/h [pomiar z " \
+            return "I003 " + record['nazwa'] + ": " + record['wartosc'] + " nSv/h [pomiar z " \
                 + record['data'] + " " + record['godzina'] + "]"
         
     return "E006 Cannot find city, try nearest larger city."
